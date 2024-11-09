@@ -13,7 +13,7 @@ lcd_socket.connect((HOST, PORT))
 
 def send_command(command):
     "Sendet einen Befehl an den LCDproc-Server und gibt Debug-Informationen aus."
-    #print(f"Sending: {command}")
+    # print(f"Sending: {command}") # Debug
     lcd_socket.sendall((command + "\n").encode("utf-8"))
 
 def setup_screen():
@@ -41,6 +41,7 @@ def setup_screen():
     # CPU-Auslastung als horizontalen Balken hinzufügen
     send_command("widget_add sysinfo cpu_usage hbar")
     send_command("widget_set sysinfo cpu_usage 1 3 0")  # Anfangsposition und Wert für CPU-Auslastung
+#    send_command("widget_set sysinfo cpu_usage length 20")  # Länge des Balkens auf 20 (Breite des Displays)
     
     # Text-Widget für RAM-Beschriftung hinzufügen (eine Zeile über dem Balken)
     send_command("widget_add sysinfo ram_label string")
@@ -49,6 +50,7 @@ def setup_screen():
     # RAM-Auslastung als horizontalen Balken hinzufügen
     send_command("widget_add sysinfo ram_usage hbar")
     send_command("widget_set sysinfo ram_usage 1 5 0")  # Anfangsposition und Wert für RAM-Auslastung
+#    send_command("widget_set sysinfo ram_usage length 20")  # Länge des Balkens auf 20 (Breite des Displays)
 
 def update_screen():
     "Aktualisiert die horizontalen Balken für CPU- und RAM-Auslastung sowie die Zeit und das Datum."
@@ -67,11 +69,12 @@ def update_screen():
     
     # CPU-Balken aktualisieren
     send_command(f"widget_set sysinfo cpu_label 1 2 {{CPU: {cpu_display}}}")
-    send_command(f"widget_set sysinfo cpu_usage 1 3 {cpu_percent}")
+    send_command(f"widget_set sysinfo cpu_usage 1 3 {int(cpu_percent * 1.59)}") # Multiplikator, damit die volle Breite des Displays genutzt wird
+#    send_command(f"widget_set sysinfo cpu_usage 1 3 159") # Volle länge des Balkens testen.
     
     # RAM-Balken aktualisieren
     send_command(f"widget_set sysinfo ram_label 1 4 {{RAM: {ram_display}}}")
-    send_command(f"widget_set sysinfo ram_usage 1 5 {ram_percent}")
+    send_command(f"widget_set sysinfo ram_usage 1 5 {int(ram_percent * 1.59)}") # Multiplikator, damit die volle Breite des Displays genutzt wird
     
     # Aktuelle Zeit und Datum holen
     current_time = datetime.now().strftime("%H:%M:%S")
