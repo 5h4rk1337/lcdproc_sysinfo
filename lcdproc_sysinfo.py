@@ -12,12 +12,12 @@ lcd_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 lcd_socket.connect((HOST, PORT))
 
 def send_command(command):
-    """Sendet einen Befehl an den LCDproc-Server und gibt Debug-Informationen aus."""
+    "Sendet einen Befehl an den LCDproc-Server und gibt Debug-Informationen aus."
     #print(f"Sending: {command}")
     lcd_socket.sendall((command + "\n").encode("utf-8"))
 
 def setup_screen():
-    """Richtet den LCD-Bildschirm und die horizontalen Balken für CPU und RAM sowie Zeit und Datum ein."""
+    "Richtet den LCD-Bildschirm und die horizontalen Balken für CPU und RAM sowie Zeit und Datum ein."
     send_command("hello")
     send_command("client_set name {PythonLCD}")
 
@@ -51,17 +51,27 @@ def setup_screen():
     send_command("widget_set sysinfo ram_usage 1 5 0")  # Anfangsposition und Wert für RAM-Auslastung
 
 def update_screen():
-    """Aktualisiert die horizontalen Balken für CPU- und RAM-Auslastung sowie die Zeit und das Datum."""
-    cpu_percent = psutil.cpu_percent()
-    ram_percent = psutil.virtual_memory().percent
+    "Aktualisiert die horizontalen Balken für CPU- und RAM-Auslastung sowie die Zeit und das Datum."
+    # Holen der aktuellen CPU- und RAM-Auslastung als Ganzzahlen
+    cpu_percent = int(psutil.cpu_percent())  # Rundet auf die nächste ganze Zahl
+    ram_percent = int(psutil.virtual_memory().percent)  # Rundet auf die nächste ganze Zahl
+    
+    # Ermittlung der RAM-Nutzung in GB und der maximalen RAM-Kapazität
+    # ram_used_gb = psutil.virtual_memory().used / (1024 ** 3)  # Umrechnung von Bytes auf GB
+    # ram_total_gb = psutil.virtual_memory().total / (1024 ** 3)  # Umrechnung von Bytes auf GB
+    
+    # Formatierung der Prozentsätze und der RAM-Nutzung in GB
+    cpu_display = f"{cpu_percent:2}%"  # z.B. ' 9%' oder '45%'
+    # ram_display = f"{ram_percent:2}% {ram_used_gb:3.1f}GB/{ram_total_gb:3.1f}GB" #Display kann nicht alle Zeichen darstellen.
+    ram_display = f"{ram_percent:2}% "
     
     # CPU-Balken aktualisieren
-    send_command(f"widget_set sysinfo cpu_label 1 2 {{CPU: {int(cpu_percent)}%}}")
-    send_command(f"widget_set sysinfo cpu_usage 1 3 {int(cpu_percent)}")
+    send_command(f"widget_set sysinfo cpu_label 1 2 {{CPU: {cpu_display}}}")
+    send_command(f"widget_set sysinfo cpu_usage 1 3 {cpu_percent}")
     
     # RAM-Balken aktualisieren
-    send_command(f"widget_set sysinfo ram_label 1 4 {{CPU: {int(ram_percent)}%}}")
-    send_command(f"widget_set sysinfo ram_usage 1 5 {int(ram_percent)}")
+    send_command(f"widget_set sysinfo ram_label 1 4 {{RAM: {ram_display}}}")
+    send_command(f"widget_set sysinfo ram_usage 1 5 {ram_percent}")
     
     # Aktuelle Zeit und Datum holen
     current_time = datetime.now().strftime("%H:%M:%S")
